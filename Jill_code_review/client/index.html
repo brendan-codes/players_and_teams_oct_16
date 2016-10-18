@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html ng-app='app'> 
+	<head>
+		<title></title>
+ <!-- THESE TWO VERSIONS BELOW MUST MATCH (good thing bower will catch that for us, but be aware if you are using CDN's)!!! -->
+		<script src="angular/angular.js"></script>
+		<script src="angular-route/angular-route.js"></script>
+		<script>
+			//  inject the ngRoute dependency in the module.
+			var app = angular.module('app', ['ngRoute']);
+			//  use the config method to set up routing:
+			app.config(function ($routeProvider) {
+				$routeProvider
+					.when('/players',{
+							templateUrl: 'partials/players.html',
+					})
+					.when('/teams',{
+							templateUrl: 'partials/teams.html',
+					})
+					.when('/associations',{
+							templateUrl: 'partials/associations.html',
+					})
+					.otherwise({
+						redirectTo: '/players'
+					});
+			});
+
+			app.factory('playerFactory', function(){
+				var players = [
+						{name: 'Speros'},
+						{name: 'Jimmy'},
+						{name: 'Jay'}
+					];
+					// factory always contains methods
+					var factory = {};
+					factory.getPlayers = function(callback){
+						callback(players);
+					};
+
+					return factory;
+				})
+			app.factory('teamFactory', function(){
+				var teams = [
+						{name: 'Seahawks'},
+						{name: '49ers'},
+						{name: 'Honeybadgers'}
+					];
+					// factory always contains methods
+					var factory = {};
+					factory.getTeams = function(callback){
+						callback(teams);
+					};
+
+					return factory;
+				})
+			//  build the controllers
+			// put controller name in partial file
+			app.controller('PlayersController', ['$scope', 'playerFactory', '$location', function ($scope, playerFactory, $location) {
+				$scope.players=[];
+				playerFactory.getPlayers(function (data){
+					$scope.players = data;
+				})
+				$scope.addPlayer = function(){
+					$scope.players.push($scope.newPlayer);
+					$scope.newPlayer = {};
+					$location.url('/associations');
+				}
+				$scope.removePlayer = function(player){
+					var index = $scope.players.indexOf(player);
+					$scope.players.splice(index, 1);
+				}
+			}]);
+			app.controller('TeamsController', ['$scope', 'teamFactory', '$location', function ($scope, teamFactory, $location) {
+				$scope.teams=[];
+				teamFactory.getTeams(function (data){
+					$scope.teams = data;
+				})
+				$scope.addTeam = function(){
+					$scope.teams.push($scope.newTeam);
+					$scope.newTeam = {};
+					$location.url('/associations');
+				}
+				$scope.removeTeam = function(team){
+					var index = $scope.teams.indexOf(team);
+					$scope.teams.splice(index, 1);
+				}
+			}]);
+			app.controller('AssociationsController', ['$scope', 'playerFactory', 'teamFactory', function ($scope, playerFactory, teamFactory) {
+				$scope.players=[];
+				playerFactory.getPlayers(function (data){
+					$scope.players = data;
+				});
+				$scope.teams=[];
+				teamFactory.getTeams(function (data){
+					$scope.teams = data;
+				});
+				$scope.assocs=[];
+				$scope.addPlayerToTeam = function(selectedPlayer, selectedTeam){
+					$scope.assocs.push({player: selectedPlayer, team: selectedTeam});
+					console.log(selectedPlayer);
+					console.log(selectedTeam);
+					console.log($scope.assocs);
+					
+				}
+				$scope.removeAssignment = function(assoc){
+					var index = $scope.assocs.indexOf(assoc);
+					$scope.assocs.splice(index, 1);
+				}
+			}]);
+		</script>
+	</head>
+	<body>
+		<div>
+        	<a href="#/players">Players</a> | <a href="#/teams">Teams</a> | <a href="#/associations">Associations</a>
+        	<div ng-view="">
+        </div>
+    </div>
+	</body>
+</html>
